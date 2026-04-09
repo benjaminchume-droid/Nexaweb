@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NexWeb — Premium Web Development</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07070f;
+      --bg2: #0d0d1a;
+      --white: #f0eeff;
+      --green: #00e5a0;
+      --purple: #7b5cff;
+      --purple2: #a78bfa;
+      --muted: rgba(240,238,255,0.45);
+      --border: rgba(240,238,255,0.07);
+      --border2: rgba(240,238,255,0.12);
+      --glass: rgba(240,238,255,0.03);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* NOISE TEXTURE */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9000; opacity: 0.4; mix-blend-mode: screen;
+    }
+
+    /* ── CURSOR ─────────────────────── */
+    .cur {
+      width: 10px; height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 9999;
+      mix-blend-mode: screen;
+      transform: translate(-50%,-50%);
+      transition: transform .1s;
+    }
+    .cur-ring {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(0,229,160,0.25);
+      border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: transform .55s cubic-bezier(.17,.67,.3,1);
+    }
+
+    /* ── NAV ────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 800;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.3rem 4rem;
+      background: rgba(7,7,15,0.75);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow .3s;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.55rem; font-weight: 800;
+      letter-spacing: -0.03em;
+      text-decoration: none; color: var(--white);
+    }
+    .nav-logo span {
+      background: linear-gradient(135deg, var(--green), var(--purple2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-links { display: flex; gap: 2.8rem; list-style: none; }
+    .nav-links a { color: var(--muted); font-size: 0.85rem; letter-spacing: .04em; text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta {
+      background: var(--green); color: var(--bg);
+      padding: .6rem 1.5rem; border-radius: 100px;
+      font-size: .85rem; font-weight: 500;
+      text-decoration: none;
+      transition: box-shadow .25s, transform .2s;
+    }
+    .nav-cta:hover { box-shadow: 0 0 28px rgba(0,229,160,.45); transform: translateY(-1px); }
+
+    /* ── HERO ───────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 9rem 2rem 5rem;
+      position: relative; overflow: hidden;
+    }
+
+    /* Animated mesh background */
+    .hero-mesh {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% -5%, rgba(123,92,255,.22) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 45% at 85% 65%, rgba(0,229,160,.12) 0%, transparent 55%),
+        radial-gradient(ellipse 35% 35% at 10% 75%, rgba(123,92,255,.1) 0%, transparent 55%);
+      animation: meshPulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes meshPulse {
+      from { opacity: .8; }
+      to { opacity: 1; }
+    }
+
+    /* Grid lines */
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
+    }
+    .orb1 { width: 500px; height: 500px; background: rgba(123,92,255,.12); top: -100px; left: -100px; animation: orbFloat 12s ease-in-out infinite alternate; }
+    .orb2 { width: 400px; height: 400px; background: rgba(0,229,160,.08); bottom: -50px; right: -80px; animation: orbFloat 9s ease-in-out infinite alternate-reverse; }
+    @keyframes orbFloat { from { transform: translate(0,0); } to { transform: translate(30px,20px); } }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .55rem;
+      background: rgba(0,229,160,.07);
+      border: 1px solid rgba(0,229,160,.2);
+      border-radius: 100px;
+      padding: .4rem 1.1rem;
+      font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 2rem;
+      animation: fadeUp .8s ease both;
+    }
+    .badge-pulse {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: bpulse 2s infinite;
+    }
+    @keyframes bpulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.35; transform:scale(.7); } }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3.2rem, 9vw, 8rem);
+      font-weight: 800;
+      line-height: .97;
+      letter-spacing: -.035em;
+      animation: fadeUp .8s .1s ease both;
+    }
+    .hero-title .grad {
+      background: linear-gradient(135deg, var(--green) 0%, var(--purple2) 55%, var(--green) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: gradShift 5s linear infinite;
+    }
+    @keyframes gradShift { to { background-position: 200% center; } }
+
+    .hero-sub {
+      font-size: clamp(.95rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.75;
+      margin-top: 1.8rem;
+      animation: fadeUp .8s .2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; margin-top: 2.8rem;
+      justify-content: center; flex-wrap: wrap;
+      animation: fadeUp .8s .3s ease both;
+    }
+    .btn-green {
+      background: var(--green); color: var(--bg);
+      padding: 1rem 2.2rem; border-radius: 100px;
+      font-size: .95rem; font-weight: 500;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: .5rem;
+      transition: box-shadow .25s, transform .2s;
+    }
+    .btn-green:hover { box-shadow: 0 0 40px rgba(0,229,160,.4); transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: var(--white);
+      padding: 1rem 2.2rem; border-radius: 100px;
+      font-size: .95rem; font-weight: 300;
+      text-decoration: none;
+      border: 1px solid var(--border2);
+      transition: border-color .2s, background .2s;
+    }
+    .btn-outline:hover { border-color: rgba(123,92,255,.5); background: rgba(123,92,255,.08); }
+
+    /* Hero stats */
+    .hero-stats {
+      display: flex; gap: 0; margin-top: 5rem;
+      border: 1px solid var(--border);
+      animation: fadeUp .8s .4s ease both;
+      flex-wrap: wrap;
+    }
+    .hstat {
+      padding: 1.6rem 3rem;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .hstat:last-child { border-right: none; }
+    .hstat-n {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem; font-weight: 700; letter-spacing: -.02em;
+    }
+    .hstat-n .g { color: var(--green); }
+    .hstat-l { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .3rem; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── MARQUEE ────────────────────── */
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.015);
+      padding: 1rem 0;
+    }
+    .mq-track {
+      display: flex; width: max-content;
+      animation: mq 22s linear infinite;
+    }
+    .mq-item {
+      font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+      color: rgba(240,238,255,.28);
+      padding: 0 2.5rem;
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      display: flex; align-items: center; gap: .8rem;
+    }
+    .mq-item .dot { color: var(--green); font-size: .5rem; }
+    @keyframes mq { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+    /* ── SECTIONS ───────────────────── */
+    .sec { padding: 8rem 4rem; }
+    .sec-dark { background: var(--bg2); }
+    .sec-inner { max-width: 1280px; margin: 0 auto; }
+    .sec-head {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 4.5rem; flex-wrap: wrap; gap: 2rem;
+    }
+    .sec-eyebrow {
+      font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--green); margin-bottom: .8rem;
+      display: flex; align-items: center; gap: .7rem;
+    }
+    .sec-eyebrow::before { content:''; display:block; width:20px; height:1px; background:var(--green); }
+    .sec-h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 800; letter-spacing: -.025em; line-height: 1.05;
+    }
+    .sec-h2 span { color: var(--green); }
+    .sec-h2 em { font-style:normal; color: var(--purple2); }
+    .sec-sub { max-width: 400px; color: var(--muted); font-size: .95rem; line-height: 1.75; }
+
+    /* ── SERVICES ───────────────────── */
+    .svc-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      border: 1px solid var(--border);
+    }
+    .svc {
+      padding: 2.8rem 2.4rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+      transition: background .3s;
+    }
+    .svc::before {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(135deg, rgba(0,229,160,.04), rgba(123,92,255,.04));
+      opacity:0; transition: opacity .3s;
+    }
+    .svc:hover::before { opacity:1; }
+    .svc:nth-child(3n) { border-right:none; }
+    .svc:nth-last-child(-n+3) { border-bottom:none; }
+    .svc-num { font-family:'Syne',sans-serif; font-size:.75rem; font-weight:700; color:var(--green); letter-spacing:.1em; margin-bottom:1.4rem; }
+    .svc-title { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:.7rem; }
+    .svc-desc { font-size:.87rem; line-height:1.75; color:var(--muted); margin-bottom:1.5rem; }
+    .svc-chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .chip { font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid var(--border2); padding:.22rem .6rem; color:var(--muted); border-radius:3px; }
+    .chip-g { font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid rgba(0,229,160,.3); padding:.22rem .6rem; color:var(--green); border-radius:3px; }
+    .svc-arrow { position:absolute; bottom:2.2rem; right:2.2rem; color:var(--border2); font-size:1.1rem; transition:color .3s, transform .3s; }
+    .svc:hover .svc-arrow { color:var(--green); transform:translate(3px,-3px); }
+
+    /* ── AI SECTION ─────────────────── */
+    .ai-wrap {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center;
+    }
+    .ai-body { color:var(--muted); font-size:.95rem; line-height:1.8; margin-top:1.5rem; }
+    .ai-pts { margin-top:2.5rem; display:flex; flex-direction:column; }
+    .ai-pt {
+      display:flex; gap:1.4rem; align-items:flex-start;
+      padding:1.5rem 0; border-bottom:1px solid var(--border);
+    }
+    .ai-pt:first-child { border-top:1px solid var(--border); }
+    .ai-icon {
+      width:36px; height:36px; min-width:36px;
+      border:1px solid rgba(0,229,160,.2);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--green); font-size:.85rem;
+    }
+    .ai-pt-title { font-family:'Syne',sans-serif; font-weight:600; font-size:.9rem; margin-bottom:.25rem; }
+    .ai-pt-desc { font-size:.83rem; line-height:1.65; color:var(--muted); }
+
+    /* AI Visual card */
+    .ai-card {
+      background: var(--glass);
+      border:1px solid var(--border2);
+      padding:2.2rem;
+      position:relative; overflow:hidden;
+    }
+    .ai-card::before {
+      content:''; position:absolute; top:-60%; right:-30%;
+      width:300px; height:300px;
+      background:radial-gradient(circle, rgba(123,92,255,.15), transparent 65%);
+      border-radius:50%; pointer-events:none;
+    }
+    .ai-card-hd {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem;
+    }
+    .ai-card-lbl { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    .ai-badge {
+      background:rgba(0,229,160,.08); border:1px solid rgba(0,229,160,.2);
+      color:var(--green); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+      padding:.25rem .7rem; border-radius:100px;
+    }
+    .ai-metrics { display:flex; flex-direction:column; gap:1.2rem; }
+    .ai-m { display:flex; align-items:center; gap:1rem; }
+    .ai-m-name { font-size:.76rem; color:var(--muted); min-width:130px; }
+    .ai-m-track { flex:1; height:2px; background:var(--border); position:relative; overflow:hidden; }
+    .ai-m-fill {
+      height:100%;
+      background:linear-gradient(90deg, var(--green), var(--purple2));
+      animation:growBar 1.6s 1s cubic-bezier(.22,1,.36,1) both;
+      transform-origin:left;
+    }
+    @keyframes growBar { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+    .ai-m-val { font-size:.73rem; color:var(--green); min-width:40px; text-align:right; }
+    .ai-note { margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border); font-size:.75rem; color:rgba(240,238,255,.28); line-height:1.65; }
+
+    /* ── PROCESS ────────────────────── */
+    .proc-grid {
+      display:grid; grid-template-columns:repeat(4,1fr);
+      border:1px solid var(--border);
+    }
+    .proc {
+      padding:2.8rem 2rem;
+      border-right:1px solid var(--border);
+      position:relative; overflow:hidden;
+      transition:background .3s;
+    }
+    .proc:hover { background:rgba(0,229,160,.025); }
+    .proc:last-child { border-right:none; }
+    .proc-num {
+      font-family:'Syne',sans-serif; font-size:4rem; font-weight:800;
+      color:rgba(240,238,255,.04); line-height:1; margin-bottom:1.5rem;
+      transition:color .3s;
+    }
+    .proc:hover .proc-num { color:rgba(0,229,160,.08); }
+    .proc-title { font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:700; margin-bottom:.7rem; }
+    .proc-desc { font-size:.84rem; line-height:1.75; color:var(--muted); }
+    .proc-tag { margin-top:1rem; font-size:.68rem; letter-spacing:.08em; color:var(--green); display:flex; align-items:center; gap:.4rem; }
+    .proc-tag::before { content:'◆'; font-size:.45rem; }
+
+    /* ── PRICING ────────────────────── */
+    .price-grid {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:1.5rem;
+    }
+    .plan {
+      background:var(--glass);
+      border:1px solid var(--border);
+      padding:2.8rem 2.4rem;
+      position:relative; overflow:hidden;
+      transition:border-color .3s, transform .3s;
+    }
+    .plan:hover { transform:translateY(-4px); }
+    .plan.feat {
+      border-color:rgba(0,229,160,.35);
+      background:linear-gradient(145deg, rgba(0,229,160,.06), rgba(123,92,255,.06));
+    }
+    .plan.feat::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,var(--green),var(--purple2));
+    }
+    .pop-tag {
+      position:absolute; top:1.8rem; right:1.8rem;
+      background:var(--green); color:var(--bg);
+      font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      padding:.28rem .75rem; border-radius:100px;
+    }
+    .plan-eye { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:1.2rem; }
+    .plan-price { font-family:'Syne',sans-serif; font-size:3.8rem; font-weight:800; letter-spacing:-.03em; line-height:1; }
+    .plan-price sup { font-size:1.4rem; font-weight:400; vertical-align:top; margin-top:.6rem; display:inline-block; }
+    .plan-price sub { font-size:.95rem; font-weight:300; color:var(--muted); font-family:'DM Sans',sans-serif; }
+    .plan-tag { font-size:.86rem; color:var(--muted); line-height:1.65; margin:1.2rem 0 2rem; }
+    .plan-sep { border:none; border-top:1px solid var(--border); margin-bottom:2rem; }
+    .plan-list { list-style:none; display:flex; flex-direction:column; gap:.85rem; margin-bottom:2.5rem; }
+    .plan-list li { font-size:.87rem; color:var(--muted); display:flex; gap:.7rem; align-items:flex-start; line-height:1.5; }
+    .plan-list li::before { content:'✓'; color:var(--green); font-weight:700; font-size:.78rem; flex-shrink:0; }
+    .plan-list li.off { opacity:.28; }
+    .plan-list li.off::before { content:'–'; color:var(--muted); }
+    .plan-btn {
+      display:block; text-align:center; padding:.95rem;
+      font-size:.8rem; font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+      text-decoration:none; border-radius:4px; transition:all .2s;
+    }
+    .plan-btn.green { background:var(--green); color:var(--bg); }
+    .plan-btn.green:hover { box-shadow:0 0 30px rgba(0,229,160,.35); }
+    .plan-btn.ghost { border:1px solid var(--border2); color:var(--white); }
+    .plan-btn.ghost:hover { border-color:rgba(123,92,255,.4); background:rgba(123,92,255,.08); }
+
+    /* ── TESTIMONIALS ───────────────── */
+    .testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .testi {
+      background:var(--glass); border:1px solid var(--border);
+      padding:2.5rem;
+      position:relative; overflow:hidden;
+    }
+    .testi::before {
+      content:''; position:absolute; top:-40%; right:-20%;
+      width:200px; height:200px;
+      background:radial-gradient(circle, rgba(123,92,255,.07), transparent 65%);
+      border-radius:50%; pointer-events:none;
+    }
+    .testi-stars { color:var(--green); font-size:.8rem; letter-spacing:.15em; margin-bottom:1rem; }
+    .testi-text { font-size:.9rem; line-height:1.8; color:var(--muted); margin-bottom:1.8rem; }
+    .testi-author { display:flex; align-items:center; gap:.85rem; }
+    .testi-av {
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg,var(--purple),var(--green));
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:.85rem; color:var(--bg);
+    }
+    .testi-name { font-family:'Syne',sans-serif; font-weight:600; font-size:.88rem; }
+    .testi-role { font-size:.75rem; color:var(--muted); margin-top:.1rem; }
+
+    /* ── CTA ────────────────────────── */
+    .cta-sec { background:var(--bg2); text-align:center; position:relative; overflow:hidden; }
+    .cta-glow {
+      position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 50% 60% at 50% 50%, rgba(0,229,160,.08) 0%, transparent 70%);
+    }
+    .cta-h2 {
+      font-family:'Syne',sans-serif;
+      font-size:clamp(2.5rem,6vw,5.5rem);
+      font-weight:800; letter-spacing:-.03em; line-height:1.0;
+      position:relative; z-index:1;
+    }
+    .cta-h2 span {
+      background:linear-gradient(135deg,var(--green),var(--purple2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .cta-sub { color:var(--muted); font-size:1rem; line-height:1.75; margin:1.5rem auto; max-width:520px; position:relative; z-index:1; }
+    .cta-btns { display:flex; gap:1rem; justify-content:center; margin-top:2.5rem; flex-wrap:wrap; position:relative; z-index:1; }
+
+    /* ── FOOTER ─────────────────────── */
+    footer {
+      background:var(--bg);
+      border-top:1px solid var(--border);
+      padding:2.5rem 4rem;
+    }
+    .foot-inner {
+      max-width:1280px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1.5rem;
+    }
+    .foot-logo { font-family:'Syne',sans-serif; font-size:1.25rem; font-weight:800; text-decoration:none; color:var(--white); }
+    .foot-logo span { background:linear-gradient(135deg,var(--green),var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .foot-links { display:flex; gap:2.5rem; list-style:none; flex-wrap:wrap; }
+    .foot-links a { font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color .2s; }
+    .foot-links a:hover { color:var(--green); }
+    .foot-copy { font-size:.72rem; color:rgba(240,238,255,.2); }
+
+    /* ── REVEAL ─────────────────────── */
+    .rv { opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease; }
+    .rv.on { opacity:1; transform:none; }
+
+    /* ── RESPONSIVE ─────────────────── */
+    @media(max-width:1024px) {
+      nav { padding:1.2rem 2rem; }
+      .nav-links { display:none; }
+      .sec { padding:5rem 2rem; }
+      .svc-grid { grid-template-columns:1fr 1fr; }
+      .svc:nth-child(3n) { border-right:1px solid var(--border); }
+      .svc:nth-child(2n) { border-right:none; }
+      .ai-wrap { grid-template-columns:1fr; gap:3rem; }
+      .proc-grid { grid-template-columns:1fr 1fr; }
+      .proc:nth-child(2) { border-right:none; }
+      .proc { border-bottom:1px solid var(--border); }
+      .price-grid { grid-template-columns:1fr; }
+      .testi-grid { grid-template-columns:1fr; }
+      .hero-stats { flex-direction:column; }
+      .hstat { border-right:none; border-bottom:1px solid var(--border); }
+      .hstat:last-child { border-bottom:none; }
+      footer { padding:2rem; }
+    }
+    @media(max-width:640px) {
+      .svc-grid { grid-template-columns:1fr; }
+      .svc { border-right:none; }
+      .proc-grid { grid-template-columns:1fr; }
+      .proc { border-right:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cur" id="cur"></div>
+  <div class="cur-ring" id="ring"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="#" class="nav-logo">Nex<span>Web</span></a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#approach">Approach</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <a href="#pricing" class="nav-cta">Get Started →</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-grid"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+
+    <div class="hero-badge"><span class="badge-pulse"></span> Global Web Development Studio</div>
+
+    <h1 class="hero-title">
+      Websites That<br/>
+      <span class="grad">Dominate.</span>
+    </h1>
+
+    <p class="hero-sub">NexWeb builds premium, high-converting websites for businesses worldwide — then manages everything with a simple monthly subscription. Professional craftsmanship, AI-enhanced speed.</p>
+
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-green">Start Your Subscription →</a>
+      <a href="#services" class="btn-outline">Explore Services</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-n" id="c1">0<span class="g">+</span></div>
+        <div class="hstat-l">Websites Delivered</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" id="c2">0<span class="g">%</span></div>
+        <div class="hstat-l">Client Satisfaction</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" id="c3">0<span class="g">+</span></div>
+        <div class="hstat-l">Countries Served</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-n" id="c4">0<span class="g">hr</span></div>
+        <div class="hstat-l">Average Launch Time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee">
+    <div class="mq-track">
+      <span class="mq-item">Premium Web Design<span class="dot">◆</span></span>
+      <span class="mq-item">Monthly Subscription<span class="dot">◆</span></span>
+      <span class="mq-item">Custom Development<span class="dot">◆</span></span>
+      <span class="mq-item">SEO Strategy<span class="dot">◆</span></span>
+      <span class="mq-item">Managed Hosting<span class="dot">◆</span></span>
+      <span class="mq-item">E-Commerce<span class="dot">◆</span></span>
+      <span class="mq-item">AI-Enhanced Workflow<span class="dot">◆</span></span>
+      <span class="mq-item">Global Delivery<span class="dot">◆</span></span>
+      <span class="mq-item">UX Design<span class="dot">◆</span></span>
+      <span class="mq-item">Performance Optimisation<span class="dot">◆</span></span>
+      <span class="mq-item">Premium Web Design<span class="dot">◆</span></span>
+      <span class="mq-item">Monthly Subscription<span class="dot">◆</span></span>
+      <span class="mq-item">Custom Development<span class="dot">◆</span></span>
+      <span class="mq-item">SEO Strategy<span class="dot">◆</span></span>
+      <span class="mq-item">Managed Hosting<span class="dot">◆</span></span>
+      <span class="mq-item">E-Commerce<span class="dot">◆</span></span>
+      <span class="mq-item">AI-Enhanced Workflow<span class="dot">◆</span></span>
+      <span class="mq-item">Global Delivery<span class="dot">◆</span></span>
+      <span class="mq-item">UX Design<span class="dot">◆</span></span>
+      <span class="mq-item">Performance Optimisation<span class="dot">◆</span></span>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section class="sec sec-dark" id="services">
+    <div class="sec-inner">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">What We Do</div>
+          <h2 class="sec-h2">Expert Services,<br/><span>End to End</span></h2>
+        </div>
+        <p class="sec-sub">Every project is led by senior designers and developers. AI sharpens our process — our expertise defines the outcome.</p>
+      </div>
+      <div class="svc-grid">
+        <div class="svc rv">
+          <div class="svc-num">01 —</div>
+          <div class="svc-title">Strategy & Discovery</div>
+          <div class="svc-desc">We start with your goals, audience, and competitive landscape. Insight-driven planning that shapes every decision after it.</div>
+          <div class="svc-chips"><span class="chip">Brand Analysis</span><span class="chip">User Research</span><span class="chip">Site Architecture</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+        <div class="svc rv">
+          <div class="svc-num">02 —</div>
+          <div class="svc-title">Design & UX</div>
+          <div class="svc-desc">Striking, intentional interfaces crafted by senior designers. Every layout decision serves one goal — turning visitors into clients.</div>
+          <div class="svc-chips"><span class="chip">UI Design</span><span class="chip">Wireframing</span><span class="chip-g">◆ AI Concepts</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+        <div class="svc rv">
+          <div class="svc-num">03 —</div>
+          <div class="svc-title">Custom Development</div>
+          <div class="svc-desc">Clean, performant code built to last. We develop on the right stack — fast, secure, and fully bespoke to your brand.</div>
+          <div class="svc-chips"><span class="chip">Frontend</span><span class="chip">CMS Integration</span><span class="chip-g">◆ AI-Accelerated</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+        <div class="svc rv">
+          <div class="svc-num">04 —</div>
+          <div class="svc-title">SEO & Performance</div>
+          <div class="svc-desc">Technical SEO and Core Web Vitals compliance baked in from day one. Your site ranks and loads — every single time.</div>
+          <div class="svc-chips"><span class="chip">Technical SEO</span><span class="chip">Speed Optimisation</span><span class="chip-g">◆ AI Content</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+        <div class="svc rv">
+          <div class="svc-num">05 —</div>
+          <div class="svc-title">Managed Hosting</div>
+          <div class="svc-desc">Enterprise-grade infrastructure, SSL, daily backups, and 24/7 uptime monitoring — all included in your subscription.</div>
+          <div class="svc-chips"><span class="chip">SSL & Security</span><span class="chip">Daily Backups</span><span class="chip">99.9% Uptime</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+        <div class="svc rv">
+          <div class="svc-num">06 —</div>
+          <div class="svc-title">Ongoing Management</div>
+          <div class="svc-desc">Content updates, design tweaks, performance reviews — handled monthly by your dedicated team. Focus on your business; we run your site.</div>
+          <div class="svc-chips"><span class="chip">Content Updates</span><span class="chip">Monthly Reports</span><span class="chip-g">◆ AI Analytics</span></div>
+          <div class="svc-arrow">↗</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI APPROACH -->
+  <section class="sec" id="approach">
+    <div class="sec-inner">
+      <div class="ai-wrap">
+        <div>
+          <div class="sec-eyebrow">Our Approach</div>
+          <h2 class="sec-h2">Human Craft.<br/><em>AI Precision.</em></h2>
+          <p class="ai-body">NexWeb is a professional web development studio first. AI is a precision tool our team wields — not a replacement for expertise. It lets us move faster, explore further, and deliver measurably better results without ever compromising the quality of the work.</p>
+          <div class="ai-pts">
+            <div class="ai-pt">
+              <div class="ai-icon">⚡</div>
+              <div>
+                <div class="ai-pt-title">Faster Design Iteration</div>
+                <div class="ai-pt-desc">AI accelerates concept exploration so you see options sooner — every design is then refined and approved by senior designers before you see it.</div>
+              </div>
+            </div>
+            <div class="ai-pt">
+              <div class="ai-icon">✦</div>
+              <div>
+                <div class="ai-pt-title">Smarter Content & Copy</div>
+                <div class="ai-pt-desc">We use AI to assist with SEO structure and content — then our editors shape every word precisely to match your brand voice.</div>
+              </div>
+            </div>
+            <div class="ai-pt">
+              <div class="ai-icon">◈</div>
+              <div>
+                <div class="ai-pt-title">Data-Driven Monthly Results</div>
+                <div class="ai-pt-desc">AI-powered analytics surface performance insights each month. Our strategists translate those into real, tangible improvements for your site.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rv">
+          <div class="ai-card">
+            <div class="ai-card-hd">
+              <div class="ai-card-lbl">Monthly Performance — AI Summary</div>
+              <div class="ai-badge">◆ AI-Assisted</div>
+            </div>
+            <div class="ai-metrics">
+              <div class="ai-m">
+                <div class="ai-m-name">Organic Traffic</div>
+                <div class="ai-m-track"><div class="ai-m-fill" style="width:84%"></div></div>
+                <div class="ai-m-val">+84%</div>
+              </div>
+              <div class="ai-m">
+                <div class="ai-m-name">Conversion Rate</div>
+                <div class="ai-m-track"><div class="ai-m-fill" style="width:67%"></div></div>
+                <div class="ai-m-val">+67%</div>
+              </div>
+              <div class="ai-m">
+                <div class="ai-m-name">Page Speed Score</div>
+                <div class="ai-m-track"><div class="ai-m-fill" style="width:96%"></div></div>
+                <div class="ai-m-val">96</div>
+              </div>
+              <div class="ai-m">
+                <div class="ai-m-name">Bounce Rate ↓</div>
+                <div class="ai-m-track"><div class="ai-m-fill" style="width:41%"></div></div>
+                <div class="ai-m-val">−41%</div>
+              </div>
+            </div>
+            <div class="ai-note">AI generates these summaries monthly. Your dedicated account manager reviews them and acts on every insight.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="sec sec-dark" id="process">
+    <div class="sec-inner">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">How We Work</div>
+          <h2 class="sec-h2">From Brief to<br/><span>Live in Days</span></h2>
+        </div>
+        <p class="sec-sub">A structured, transparent process refined across thousands of projects. You always know exactly where your site stands.</p>
+      </div>
+      <div class="proc-grid">
+        <div class="proc rv">
+          <div class="proc-num">01</div>
+          <div class="proc-title">Discovery Call</div>
+          <div class="proc-desc">A real conversation with a senior strategist. We learn your business, goals, and audience — not a generic intake form.</div>
+        </div>
+        <div class="proc rv">
+          <div class="proc-num">02</div>
+          <div class="proc-title">Design & Build</div>
+          <div class="proc-desc">Your site is designed and built. You receive design previews before development begins — revisions welcome.</div>
+          <div class="proc-tag">AI accelerates concept exploration</div>
+        </div>
+        <div class="proc rv">
+          <div class="proc-num">03</div>
+          <div class="proc-title">Review & Launch</div>
+          <div class="proc-desc">You approve, we launch — domain setup, hosting, go-live — typically within 5–7 business days of sign-off.</div>
+        </div>
+        <div class="proc rv">
+          <div class="proc-num">04</div>
+          <div class="proc-title">Managed Monthly</div>
+          <div class="proc-desc">Hosting, security, updates, SEO and performance reporting — handled by your dedicated NexWeb team every month.</div>
+          <div class="proc-tag">AI-powered analytics included</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="sec" id="pricing">
+    <div class="sec-inner">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">Subscription Plans</div>
+          <h2 class="sec-h2">Simple Pricing.<br/><span>No Surprises.</span></h2>
+        </div>
+        <p class="sec-sub">One monthly fee covers your build, hosting, management, and AI-powered reporting. No setup fees. No contracts. Cancel anytime.</p>
+      </div>
+      <div class="price-grid">
+        <div class="plan rv">
+          <div class="plan-eye">Essentials</div>
+          <div class="plan-price"><sup>$</sup>89<sub>/mo</sub></div>
+          <p class="plan-tag">For small businesses that need a polished, professional online presence that actually works.</p>
+          <hr class="plan-sep"/>
+          <ul class="plan-list">
+            <li>Up to 6 custom pages</li>
+            <li>Mobile-responsive design</li>
+            <li>SEO foundations built in</li>
+            <li>SSL + managed hosting</li>
+            <li>2 content updates/month</li>
+            <li>Monthly AI performance report</li>
+            <li class="off">E-commerce capability</li>
+            <li class="off">Priority support</li>
+          </ul>
+          <a href="#" class="plan-btn ghost">Get Started</a>
+        </div>
+        <div class="plan feat rv">
+          <div class="pop-tag">Most Popular</div>
+          <div class="plan-eye">Growth</div>
+          <div class="plan-price"><sup>$</sup>169<sub>/mo</sub></div>
+          <p class="plan-tag">For growing businesses ready to invest in a site that actively generates leads and revenue.</p>
+          <hr class="plan-sep"/>
+          <ul class="plan-list">
+            <li>Up to 20 custom pages</li>
+            <li>Premium bespoke design</li>
+            <li>Full SEO strategy + content</li>
+            <li>Priority hosting + CDN</li>
+            <li>Unlimited content updates</li>
+            <li>AI analytics dashboard</li>
+            <li>E-commerce ready</li>
+            <li class="off">Dedicated account manager</li>
+          </ul>
+          <a href="#" class="plan-btn green">Get Started →</a>
+        </div>
+        <div class="plan rv">
+          <div class="plan-eye">Enterprise</div>
+          <div class="plan-price"><sup>$</sup>349<sub>/mo</sub></div>
+          <p class="plan-tag">For established businesses needing a full-service digital partner and white-glove experience.</p>
+          <hr class="plan-sep"/>
+          <ul class="plan-list">
+            <li>Unlimited pages</li>
+            <li>Fully bespoke design system</li>
+            <li>Advanced SEO + PR content</li>
+            <li>Enterprise hosting + SLA</li>
+            <li>Unlimited updates & requests</li>
+            <li>AI analytics + strategy calls</li>
+            <li>Full e-commerce + integrations</li>
+            <li>Dedicated account manager</li>
+          </ul>
+          <a href="#" class="plan-btn ghost">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="sec sec-dark" id="testimonials">
+    <div class="sec-inner">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">Client Stories</div>
+          <h2 class="sec-h2">Built on<br/><span>Real Results</span></h2>
+        </div>
+        <p class="sec-sub">We measure success in the outcomes our clients achieve — not the number of sites we ship.</p>
+      </div>
+      <div class="testi-grid">
+        <div class="testi rv">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">NexWeb didn't just build a website — they built a revenue machine. Enquiries tripled within three months and we finally look like the premium brand we are.</p>
+          <div class="testi-author">
+            <div class="testi-av">MR</div>
+            <div>
+              <div class="testi-name">Marcus Reynolds</div>
+              <div class="testi-role">Director, Reynolds Architecture</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi rv">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">The subscription model changed everything. I don't think about hosting, updates, or tech anymore — it's all just handled. I focus on clients; NexWeb handles the rest.</p>
+          <div class="testi-author">
+            <div class="testi-av">SL</div>
+            <div>
+              <div class="testi-name">Sarah Lindström</div>
+              <div class="testi-role">Founder, Lindström Wellness</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi rv">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">Professional, precise, and genuinely transparent. The monthly AI reports are actionable — not just numbers. We're up 70% in organic traffic since launch.</p>
+          <div class="testi-author">
+            <div class="testi-av">JO</div>
+            <div>
+              <div class="testi-name">James Okoro</div>
+              <div class="testi-role">CEO, KranzBuilt Construction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="sec cta-sec">
+    <div class="cta-glow"></div>
+    <div class="sec-inner" style="text-align:center">
+      <div class="sec-eyebrow" style="justify-content:center">Ready to Launch?</div>
+      <h2 class="cta-h2">Your Website Should<br/><span>Work as Hard as You Do.</span></h2>
+      <p class="cta-sub">Join thousands of businesses worldwide who trust NexWeb for their online presence. Expert-built, AI-enhanced, fully managed — from day one.</p>
+      <div class="cta-btns">
+        <a href="#pricing" class="btn-green">Start Your Subscription →</a>
+        <a href="#process" class="btn-outline">See How It Works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-inner">
+      <a href="#" class="foot-logo">Nex<span>Web</span></a>
+      <ul class="foot-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#approach">Approach</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy</a></li>
+      </ul>
+      <div class="foot-copy">© 2026 NexWeb. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Cursor
+    const cur = document.getElementById('cur');
+    const ring = document.getElementById('ring');
+    let mx=0, my=0, rx=0, ry=0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+    });
+    (function anim() {
+      rx += (mx - rx) * .1; ry += (my - ry) * .1;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(anim);
+    })();
+
+    // Scroll reveal with stagger
+    const rvEls = document.querySelectorAll('.rv');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const siblings = Array.from(e.target.parentElement.querySelectorAll('.rv'));
+          const i = siblings.indexOf(e.target);
+          setTimeout(() => e.target.classList.add('on'), i * 100);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    rvEls.forEach(el => obs.observe(el));
+
+    // Counter animation
+    function counter(el, target, suffix) {
+      let v = 0; const step = target / 55;
+      const t = setInterval(() => {
+        v = Math.min(v + step, target);
+        el.innerHTML = Math.floor(v) + '<span class="g">' + suffix + '</span>';
+        if (v >= target) clearInterval(t);
+      }, 18);
+    }
+    const statsObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          counter(document.getElementById('c1'), 2400, '+');
+          counter(document.getElementById('c2'), 98, '%');
+          counter(document.getElementById('c3'), 40, '+');
+          counter(document.getElementById('c4'), 72, 'hr');
+          statsObs.disconnect();
+        }
+      });
+    }, { threshold: .5 });
+    const statsEl = document.querySelector('.hero-stats');
+    if (statsEl) statsObs.observe(statsEl);
+
+    // Nav shadow
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').style.boxShadow =
+        window.scrollY > 30 ? '0 8px 40px rgba(0,0,0,.4)' : 'none';
+    });
+  </script>
+</body>
+</html>
